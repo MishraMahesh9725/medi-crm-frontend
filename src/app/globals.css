@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: #F3F7F6;
+    --foreground: #1F2D2B;
+    --card: #ffffff;
+    --card-foreground: #1F2D2B;
+    --border: #E2EEEC;
+    --input: #E2EEEC;
+    --primary: #2F8F83;
+    --primary-foreground: #ffffff;
+    --secondary: #E4F3F1;
+    --secondary-foreground: #1F2D2B;
+    --muted: #F3F7F6;
+    --muted-foreground: #5A7370;
+    --accent: #E4F3F1;
+    --accent-foreground: #2F8F83;
+    --destructive: #D94F4F;
+    --destructive-foreground: #ffffff;
+    --ring: #2F8F83;
+    --radius: 12px;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: var(--border);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Focus visible for keyboard nav */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Minimum touch target size */
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-height: unset;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #1F2D2B;
+    font-weight: 600;
+  }
+
+  /* Remove default button styles */
+  button {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  /* Indian number formatting helper class */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Smooth scrolling for all scroll containers */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar while keeping scroll functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
