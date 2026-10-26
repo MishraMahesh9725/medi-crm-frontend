@@ -282,6 +282,8 @@ function Step1Medicines({
 function Step2Payment({
   selectedCustomer,
   onSelectCustomer,
+  whatsappNumber,
+  onWhatsappNumber,
   paymentMode,
   onPaymentMode,
   paidAmount,
@@ -294,6 +296,8 @@ function Step2Payment({
 }: {
   selectedCustomer: Customer | null;
   onSelectCustomer: (c: Customer | null) => void;
+  whatsappNumber: string;
+  onWhatsappNumber: (number: string) => void;
   paymentMode: PaymentMode;
   onPaymentMode: (m: PaymentMode) => void;
   paidAmount: number;
@@ -467,6 +471,23 @@ function Step2Payment({
         )}
       </section>
 
+      {/* WhatsApp delivery */}
+      <section>
+        <label className="text-sm font-medium text-[#1F2D2B] block mb-1.5">
+          WhatsApp number <span className="text-[#5A7370] font-normal">(optional)</span>
+        </label>
+        <input
+          type="tel"
+          value={whatsappNumber}
+          onChange={(e) => onWhatsappNumber(e.target.value)}
+          placeholder="+91 98765 43210"
+          className="w-full min-h-[44px] px-3 rounded-[10px] border border-[#E2EEEC] text-base text-[#1F2D2B] placeholder:text-[#5A7370] focus:outline-none focus:ring-2 focus:ring-[#2F8F83]"
+        />
+        <p className="text-xs text-[#5A7370] mt-1">
+          If provided, the bill PDF will be sent to this number after saving.
+        </p>
+      </section>
+
       {/* Payment mode */}
       <section>
         <h3 className="text-sm font-medium text-[#1F2D2B] mb-3">How are they paying?</h3>
@@ -566,6 +587,7 @@ function Step2Payment({
 function Step3Review({
   cart,
   selectedCustomer,
+  whatsappNumber,
   paymentMode,
   paidAmount,
   doctorName,
@@ -578,6 +600,7 @@ function Step3Review({
 }: {
   cart: CartItem[];
   selectedCustomer: Customer | null;
+  whatsappNumber: string;
   paymentMode: PaymentMode;
   paidAmount: number;
   doctorName: string;
@@ -662,6 +685,7 @@ function Step3Review({
       {/* Summary */}
       <div className="text-sm text-[#5A7370] space-y-1">
         <p>Customer: {selectedCustomer?.name ?? "Walk-in"}</p>
+        {whatsappNumber && <p>WhatsApp bill: {whatsappNumber}</p>}
         <p>Payment: {paymentMode}</p>
         {doctorName && <p>Doctor: {doctorName}</p>}
         {notes && <p>Notes: {notes}</p>}
@@ -788,6 +812,7 @@ export default function NewBillPage() {
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [paymentMode, setPaymentMode] = useState<PaymentMode>("CASH");
   const [paidAmount, setPaidAmount] = useState(0);
   const [doctorName, setDoctorName] = useState("");
@@ -884,7 +909,7 @@ export default function NewBillPage() {
   function holdBill() {
     localStorage.setItem(
       "medibill_held_bill",
-      JSON.stringify({ cart, selectedCustomer, paymentMode, paidAmount, doctorName, notes })
+      JSON.stringify({ cart, selectedCustomer, whatsappNumber, paymentMode, paidAmount, doctorName, notes })
     );
     toast("Bill held. You can resume it later.");
   }
@@ -893,6 +918,7 @@ export default function NewBillPage() {
     try {
       const result = await createSale.mutateAsync({
         customerId: selectedCustomer?.id,
+        whatsappNumber: whatsappNumber.trim() || undefined,
         items: cart.map((item) => ({
           medicineId: item.medicine.id,
           quantity: item.quantity,
@@ -906,7 +932,15 @@ export default function NewBillPage() {
         notes: notes || undefined,
       });
 
-      toast("Bill saved");
+      if (result.data.whatsapp?.status === "SENT") {
+        toast("Bill saved and PDF sent via WhatsApp");
+      } else if (result.data.whatsapp?.status === "QUEUED") {
+        toast("Bill saved. Configure WhatsApp credentials to send bill PDFs.");
+      } else if (result.data.whatsapp?.status === "FAILED") {
+        toast("Bill saved, but WhatsApp delivery failed.", "error");
+      } else {
+        toast("Bill saved");
+      }
 
       if (print) {
         router.push(`/sales/${result.data.id}?print=1`);
@@ -962,7 +996,12 @@ export default function NewBillPage() {
         {currentStepName === "payment" && (
           <Step2Payment
             selectedCustomer={selectedCustomer}
-            onSelectCustomer={setSelectedCustomer}
+            onSelectCustomer={(customer) => {
+              setSelectedCustomer(customer);
+              setWhatsappNumber(customer?.phone ?? "");
+            }}
+            whatsappNumber={whatsappNumber}
+            onWhatsappNumber={setWhatsappNumber}
             paymentMode={paymentMode}
             onPaymentMode={setPaymentMode}
             paidAmount={paidAmount}
@@ -979,6 +1018,7 @@ export default function NewBillPage() {
           <Step3Review
             cart={cart}
             selectedCustomer={selectedCustomer}
+            whatsappNumber={whatsappNumber}
             paymentMode={paymentMode}
             paidAmount={paidAmount}
             doctorName={doctorName}

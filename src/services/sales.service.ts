@@ -15,6 +15,7 @@ export interface SaleItemInput {
 
 export interface CreateSaleInput {
   customerId?: string;
+  whatsappNumber?: string;
   items: SaleItemInput[];
   discount?: number;
   paymentMode: PaymentMode;
@@ -62,6 +63,15 @@ export interface Sale {
   status: SaleStatus;
   doctorName: string | null;
   notes: string | null;
+  wpProvided?: boolean;
+  whatsappNumber?: string | null;
+  whatsappSentAt?: string | null;
+  whatsapp?: {
+    ok: boolean;
+    status: "SENT" | "QUEUED" | "FAILED";
+    waMeUrl?: string;
+    error?: string;
+  };
   createdAt: string;
   updatedAt: string;
   customer?: {

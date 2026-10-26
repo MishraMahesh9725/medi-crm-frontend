@@ -71,6 +71,15 @@ export default function SaleDetailPage() {
   const total = Number(sale.total);
   const paid = Number(sale.paidAmount);
   const balance = total - paid;
+  const billPhone = sale.whatsappNumber ?? sale.customer?.phone;
+  const whatsappRecipient = billPhone?.replace(/\D/g, "");
+  const whatsappNumber = whatsappRecipient
+    ? whatsappRecipient.startsWith("0")
+      ? whatsappRecipient.slice(1)
+      : whatsappRecipient.length === 10
+        ? `91${whatsappRecipient}`
+        : whatsappRecipient
+    : undefined;
 
   return (
     <div className="max-w-2xl mx-auto print:max-w-full">
@@ -94,10 +103,10 @@ export default function SaleDetailPage() {
         >
           <Printer className="w-4 h-4" /> Print bill
         </button>
-        {sale.customer?.phone && (
+        {whatsappNumber && (
           <a
-            href={`https://wa.me/91${sale.customer.phone}?text=${encodeURIComponent(
-              `Hello ${sale.customer.name}, your bill ${sale.invoiceNo} of ${formatMoney(total)} has been created. Thank you for your visit!`
+            href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+              `Hello ${sale.customer?.name ?? "customer"}, your bill ${sale.invoiceNo} of ${formatMoney(total)} has been created. Thank you for your visit!`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -131,8 +140,8 @@ export default function SaleDetailPage() {
           <div>
             <p className="text-[#5A7370]">Customer</p>
             <p className="font-medium text-[#1F2D2B]">{sale.customer?.name ?? "Walk-in"}</p>
-            {sale.customer?.phone && (
-              <p className="text-[#5A7370]">{sale.customer.phone}</p>
+            {billPhone && (
+              <p className="text-[#5A7370]">{billPhone}</p>
             )}
           </div>
           <div>
